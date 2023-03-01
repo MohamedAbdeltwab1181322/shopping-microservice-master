@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users
+  labels:
+    app: users
+  namespace: microservice
+  annotations:
+    author: Mahmoud Abd Alziem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users
+  template:
+    metadata:
+      name: users
+      labels:
+        app: users
+      namespace: microservice
+      annotations:
+        author: Mahmoud Abd Alziem
+    spec:
+      containers:
+        - name: users
+          image: azima/users
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /user
+              port: 3003
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /user
+              port: 3003
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10
+          envFrom:
+            - configMapRef:
+                name: config-data
+            - secretRef:
+                name: password-secret
+          ports:
+            - name: users
+              containerPort: 3003
+              protocol: TCP

@@ -1,0 +1,140 @@
+version: "3"
+services:
+  zookeeper:
+    image: "bitnami/zookeeper:latest"
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: "bitnami/kafka:latest"
+    container_name: "kafka"
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      # - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_ADVERTISED_HOST_NAME=kafka
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+  db:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: mysql
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_DATABASE: shopping
+  redis:
+    image: redis/redis-stack-server:latest
+    ports:
+      - 6379:6379
+    container_name: redis
+  migrations:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: migration
+    command: sh -c "dockerize -wait tcp://db:3306 npm start"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: 12345678
+      DB_NAME: shopping
+      RUN_MIGRATIONS: 1
+  orders:
+    build:
+      context: ./orders
+      dockerfile: Dockerfile
+    container_name: order
+    command: sh -c "dockerize -wait tcp://db:3306 -wait tcp://redis:6379 -wait tcp://kafka:9092 npm start"
+    ports:
+      - 3001:3001
+    depends_on:
+      - db
+      - redis
+      - kafka
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: 12345678
+      DB_NAME: shopping
+      REDIS_PORT: 6379
+      REDIS_HOST: redis
+      KAFKA_ID: test
+      KAFKA_BROKERS: kafka:9092
+      TOKEN_KEY: azima
+    restart: unless-stopped
+  products:
+    build:
+      context: ./products
+      dockerfile: Dockerfile
+    container_name: product
+    command: sh -c "dockerize -wait tcp://db:3306 -wait tcp://redis:6379 -wait tcp://kafka:9092 npm start"
+    ports:
+      - 3002:3002
+    depends_on:
+      - db
+      - redis
+      - kafka
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: 12345678
+      DB_NAME: shopping
+      REDIS_PORT: 6379
+      REDIS_HOST: redis
+      KAFKA_ID: test
+      KAFKA_BROKERS: kafka:9092
+      TOKEN_KEY: azima
+    restart: unless-stopped
+  users:
+    build:
+      context: ./users
+      dockerfile: Dockerfile
+    container_name: user
+    command: sh -c "dockerize -wait tcp://db:3306 -wait tcp://redis:6379 -wait tcp://kafka:9092 npm start"
+    ports:
+      - 3003:3003
+    depends_on:
+      - db
+      - redis
+      - kafka
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: 12345678
+      DB_NAME: shopping
+      REDIS_PORT: 6379
+      REDIS_HOST: redis
+      KAFKA_ID: test
+      KAFKA_BROKERS: kafka:9092
+      TOKEN_KEY: azima
+    restart: unless-stopped
+  shopping:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    command: sh -c "dockerize -wait tcp://db:3306 -wait tcp://redis:6379 npm start" 
+    ports:
+      - "80:80"
+    environment:
+      USER_URL: users:3003
+      ORDER_URL: orders:3001
+      PRODUCT_URL: products:3002
+      PORT: 80
+    restart: unless-stopped
+volumes:
+  mysql-data:
+networks:
+  kafka:

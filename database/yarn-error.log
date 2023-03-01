@@ -1,0 +1,56 @@
+Arguments: 
+  /usr/local/bin/node /usr/local/bin/yarn
+
+PATH: 
+  /usr/local/opt/mysql-client/bin:/home/azima/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  14.17.5
+
+Platform: 
+  linux x64
+
+Trace: 
+  Error: EACCES: permission denied, unlink '/home/azima/Desktop/shopping-cart/database/node_modules/.yarn-integrity'
+
+npm manifest: 
+  {
+      "name": "shopping-cart",
+      "version": "1.0.0",
+      "description": "DataBase Connection For RDS => (Relational Database Service)",
+      "main": "server.js",
+      "scripts": {
+          "start": "node db.js"
+      },
+      "repository": {
+          "type": "git",
+          "url": "git+https://github.com/Mahmoudalziem/Full-Arc-Microservices-Devops.git"
+      },
+      "author": "Mahmoud Abd Alziem",
+      "license": "ISC",
+      "bugs": {
+          "url": "https://github.com/Mahmoudalziem/Full-Arc-Microservices-Devops/issues"
+      },
+      "homepage": "https://github.com/Mahmoudalziem/Full-Arc-Microservices-Devops#readme",
+      "dependencies": {
+          "bcryptjs": "^2.4.3",
+          "dotenv": "^8.2.0",
+          "knex": "^0.19.5",
+          "lodash": "^4.17.15",
+          "moment": "^2.29.4",
+          "mysql2": "^2.3.3",
+          "path": "^0.12.7"
+      },
+      "devDependencies": {
+          "nyc": "^14.1.1"
+      }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

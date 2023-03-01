@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products
+  labels:
+    app: products
+  namespace: microservice
+  annotations:
+    author: Mahmoud Abd Alziem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products
+  template:
+    metadata:
+      name: products
+      labels:
+        app: products
+      namespace: microservice
+      annotations:
+        author: Mahmoud Abd Alziem
+    spec:
+      containers:
+        - name: products
+          image: azima/products
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /product
+              port: 3002
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /product
+              port: 3002
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10
+          envFrom:
+            - configMapRef:
+                name: config-data
+            - secretRef:
+                name: password-secret
+          ports:
+            - name: products
+              containerPort: 3002
+              protocol: TCP

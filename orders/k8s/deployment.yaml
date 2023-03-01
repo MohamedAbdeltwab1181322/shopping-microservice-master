@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders
+  labels:
+    app: orders
+  namespace: microservice
+  annotations:
+    author: Mahmoud Abd Alziem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders
+  template:
+    metadata:
+      name: orders
+      labels:
+        app: orders
+      namespace: microservice
+      annotations:
+        author: Mahmoud Abd Alziem
+    spec:
+      containers:
+        - name: orders
+          image: azima/orders
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /order
+              port: 3001
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /order
+              port: 3001
+            initialDelaySeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 10
+          envFrom:
+            - configMapRef:
+                name: config-data
+            - secretRef:
+                name: password-secret
+          ports:
+            - name: orders
+              containerPort: 3001
+              protocol: TCP

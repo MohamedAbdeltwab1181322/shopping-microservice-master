@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: database
+  namespace: microservice
+  annotations:
+    author: "Mahmoud Abd Alziem"
+spec:
+  template:
+    spec:
+      containers:
+        - name: database
+          image: azima/database
+          command: ["npm", "start"]
+          resources: {}
+          envFrom:
+            - configMapRef:
+                name: config-data
+            - secretRef:
+                name: password-secret
+      restartPolicy: Never
+  backoffLimit: 4
